@@ -1,0 +1,59 @@
+name: build
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  Build:
+    name: ${{ matrix.os-name }} (${{ matrix.compiler }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [windows-clang, linux-clang, macos-clang]
+        include:
+          - name: windows-clang
+            os: windows-latest
+            os-name: windows
+            compiler: clang
+            cxx: clang-cl
+            cc: clang-cl
+          - name: linux-clang
+            os: ubuntu-latest
+            os-name: linux
+            compiler: clang
+            cxx: clang++
+            cc: clang
+          - name: macos-clang
+            os: macos-latest
+            os-name: macos
+            compiler: clang
+            cxx: clang++
+            cc: clang
+
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Init Submodules
+        uses: snickerbockers/submodules-init@v4
+
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Build
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: python build.py
+        shell: sh
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "release.tar.gz,foo/*.txt"
+          token: ${{ secrets.GITHUB_TOKEN }}
