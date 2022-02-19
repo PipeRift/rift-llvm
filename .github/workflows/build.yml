@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-debug:
-    name: ${{ matrix.name }} Debug
+    name: ${{ matrix.name }} debug
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -51,7 +51,7 @@ jobs:
 
   build-release:
     needs: build-debug
-    name: ${{ matrix.name }} Release
+    name: ${{ matrix.name }} release
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
