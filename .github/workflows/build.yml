@@ -6,32 +6,24 @@ on:
       - "v*.*.*"
 
 jobs:
-  Build:
-    name: ${{ matrix.os-name }} (${{ matrix.compiler }})
+  build-debug:
+    name: ${{ matrix.name }} Debug
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
-        name: [windows-clang, linux-clang, macos-clang]
+        name: [windows, linux, macos]
         include:
-          - name: windows-clang
+          - name: windows
             os: windows-latest
-            os-name: windows
-            compiler: clang
             cxx: clang-cl
             cc: clang-cl
-          - name: linux-clang
+          - name: linux
             os: ubuntu-latest
-            os-name: linux
-            compiler: clang
             cxx: clang++
             cc: clang
-          - name: macos-clang
+          - name: macos
             os: macos-latest
-            os-name: macos
-            compiler: clang
             cxx: clang++
             cc: clang
     steps:
@@ -44,14 +36,80 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
+      - name: Cache llvm build
+        uses: actions/cache@v2
+        with:
+          path: build
+          key: llvm-${{ matrix.name }}-${{ env.GITHUB_SHA }}
+
       - name: Build
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
-        run: python build.py
+        run: python build.py -c Debug
         shell: sh
 
-      - name: Package release
+  build-release:
+    needs: build-debug
+    name: ${{ matrix.name }} Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [windows, linux, macos]
+        include:
+          - name: windows
+            os: windows-latest
+            cxx: clang-cl
+            cc: clang-cl
+          - name: linux
+            os: ubuntu-latest
+            cxx: clang++
+            cc: clang
+          - name: macos
+            os: macos-latest
+            cxx: clang++
+            cc: clang
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Init Submodules
+        uses: snickerbockers/submodules-init@v4
+
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Cache llvm build
+        uses: actions/cache@v2
+        with:
+          path: build
+          key: llvm-${{ matrix.name }}-${{ env.GITHUB_SHA }}
+
+      - name: Build
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: python build.py -c Release
+        shell: sh
+
+  publish:
+    needs: build-release
+    name: Publish ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        name: [windows, linux, macos]
+    steps:
+      - name: Download llvm build
+        uses: actions/cache@v2
+        with:
+          path: build
+          key: llvm-${{ matrix.name }}-${{ env.GITHUB_SHA }}
+
+      - name: Package
         uses: thedoctor0/zip-release@master
         with:
           type: 'zip'
@@ -59,7 +117,7 @@ jobs:
           filename: 'llvm-${{ matrix.name }}.zip'
           exclusions: '*.obj'
 
-      - name: Upload release
+      - name: Upload Release
         uses: softprops/action-gh-release@v1
         with:
           files: llvm-${{ matrix.name }}.zip
