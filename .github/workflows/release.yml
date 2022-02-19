@@ -1,0 +1,38 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  publish:
+    name: Publish ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        name: [windows, linux, macos]
+    steps:
+      - name: Download llvm build
+        uses: actions/cache@v2
+        with:
+          path: build
+          key: llvm-${{ matrix.name }}-${{ github.sha }}
+
+      - name: Package
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          path: 'build'
+          filename: 'llvm-${{ matrix.name }}.zip'
+          exclusions: '*.obj'
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: llvm-${{ matrix.name }}.zip
