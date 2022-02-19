@@ -11,6 +11,7 @@ jobs:
 
   publish:
     name: Publish ${{ matrix.name }}
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write

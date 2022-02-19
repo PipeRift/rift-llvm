@@ -54,8 +54,8 @@ jobs:
         shell: sh
 
   build-release:
-    needs: build-debug
     name: ${{ matrix.name }} release
+    needs: build-debug
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
