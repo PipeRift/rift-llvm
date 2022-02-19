@@ -23,7 +23,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: build
-          key: llvm-${{ matrix.name }}-${{ github.sha }}
+          key: llvm-${{ matrix.name }}-${{ github.ref }}
 
       - name: Package
         uses: thedoctor0/zip-release@master
