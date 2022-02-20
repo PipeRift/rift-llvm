@@ -12,12 +12,19 @@ jobs:
   publish:
     name: Publish ${{ matrix.name }}
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: write
     strategy:
       matrix:
         name: [windows, linux, macos]
+        include:
+          - name: windows
+            os: windows-latest
+          - name: linux
+            os: ubuntu-latest
+          - name: macos
+            os: macos-latest
     steps:
       - name: Download llvm build
         uses: actions/cache@v2
