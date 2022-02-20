@@ -11,8 +11,9 @@ def main(argv):
     sys.exit(2)
 
   root = os.getcwd()
-  llvm_path = os.path.join(root, 'llvm')
+  llvm_path = os.path.join(root, 'llvm/llvm')
   build_path = os.path.join(root, 'build')
+  install_path = os.path.join(root, 'install')
   config = 'Release'
 
   for opt, arg in opts:
@@ -23,6 +24,8 @@ def main(argv):
         config = arg
     elif opt in ("-b", "--build-path"):
         build_path = arg
+    elif opt in ("-i", "--install-path"):
+        install_path = arg
 
   print(">> Configure LLVM ({})".format(config))
   os.system('cmake -S "{}" -B "{}" -DLLVM_ENABLE_PROJECTS="lld;clang" \
@@ -42,6 +45,10 @@ def main(argv):
 
   print("\n>> Build LLVM")
   os.system('cmake --build "{}" --config {} --target install'.format(build_path, config))
+
+  print("\n>> Install LLVM")
+  os.system('cmake -DCMAKE_INSTALL_PREFIX={} -P {}/cmake_install.cmake'.format(install_path, build_path))
+
 
 if __name__ == "__main__":
    main(sys.argv[1:])
