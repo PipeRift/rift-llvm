@@ -40,15 +40,14 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
-      - name: Cache llvm build
-        uses: actions/cache@v2
-        with:
-          path: install
-          key: llvm-${{ matrix.name }}-${{ github.ref }}
-
       - name: Build & Install
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
         run: python build.py -c Release
         shell: sh
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: llvm-${{ matrix.name }}
+          path: install
