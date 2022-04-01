@@ -1,20 +1,22 @@
 import os
 import sys, getopt
+import shutil
 
 
 def main(argv):
-  help = 'test.py -c <Debug|Release|MinSizeRel|RelWithDebInfo>'
+  help = 'test.py -c {Debug|Release|MinSizeRel|RelWithDebInfo} -b {build-path} -i {install-path} [--clean-build]'
   try:
-    opts, args = getopt.getopt(argv,"hc:",["config="])
+    opts, args = getopt.getopt(argv,"hc:bi",["config=", "build-path=", "install-path=", "clean-build"])
   except getopt.GetoptError:
     print(help)
     sys.exit(2)
 
   root = os.getcwd()
+  config = 'Release'
   llvm_path = os.path.join(root, 'llvm/llvm')
   build_path = os.path.join(root, 'build')
   install_path = os.path.join(root, 'install')
-  config = 'Release'
+  clean_build = False
 
   for opt, arg in opts:
     if opt == '-h':
@@ -26,6 +28,8 @@ def main(argv):
         build_path = arg
     elif opt in ("-i", "--install-path"):
         install_path = arg
+    elif opt in ("--clean-build"):
+        clean_build = True
 
   print(">> Configure LLVM ({})".format(config))
   os.system('cmake -S "{}" -B "{}" -DLLVM_ENABLE_PROJECTS="lld;clang" \
@@ -51,6 +55,8 @@ def main(argv):
   print("\n>> Install LLVM")
   os.system('cmake -DCMAKE_INSTALL_PREFIX={} -P {}/cmake_install.cmake'.format(install_path, build_path))
 
+  if clean_build:
+    shutil.rmtree(build_path)
 
 if __name__ == "__main__":
    main(sys.argv[1:])

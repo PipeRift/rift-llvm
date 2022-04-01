@@ -44,7 +44,7 @@ jobs:
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
-        run: python build.py -c Release
+        run: python build.py -c Release --clean-build
         shell: sh
 
       - uses: actions/upload-artifact@v2
@@ -86,7 +86,7 @@ jobs:
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
-        run: python build.py -c Debug
+        run: python build.py -c Debug --clean-build
         shell: sh
 
       - uses: actions/upload-artifact@v2
