@@ -51,3 +51,46 @@ jobs:
         with:
           name: llvm-${{ matrix.name }}
           path: install
+
+  build-debug:
+    name: ${{ matrix.name }} debug
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [windows, linux, macos]
+        include:
+          - name: windows
+            os: windows-latest
+            cxx: clang-cl
+            cc: clang-cl
+          - name: linux
+            os: ubuntu-latest
+            cxx: clang++
+            cc: clang
+          - name: macos
+            os: macos-latest
+            cxx: clang++
+            cc: clang
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Init Submodules
+        uses: snickerbockers/submodules-init@v4
+
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Build & Install
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: python build.py -c Debug
+        shell: sh
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: llvm-${{ matrix.name }}-debug
+          path: install
+
