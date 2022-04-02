@@ -30,7 +30,7 @@ jobs:
       - name: Download llvm build
         uses: actions/download-artifact@v2
         with:
-          name: llvm-${{ matrix.name }}-${{ matrix.config }}
+          name: LLVM-${{ matrix.name }}-${{ matrix.config }}
           path: llvm
 
       - name: Package
@@ -38,10 +38,10 @@ jobs:
         with:
           type: 'zip'
           path: 'llvm'
-          filename: 'llvm-${{ matrix.name }}-${{ matrix.config }}.zip'
+          filename: 'LLVM-${{ matrix.name }}-${{ matrix.config }}.zip'
           exclusions: '*.obj'
 
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         with:
-          files: llvm-${{ matrix.name }}.zip
+          files: LLVM-${{ matrix.name }}-${{ matrix.config }}.zip
