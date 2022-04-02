@@ -11,22 +11,23 @@ on:
 
 jobs:
   build-release:
-    name: ${{ matrix.name }} release
+    name: ${{ matrix.name }} (${{ matrix.config }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        name: [windows, linux, macos]
+        name: [Windows, Linux, MacOS]
+        config: [Debug, Release]
         include:
-          - name: windows
+          - name: Windows
             os: windows-latest
             cxx: clang-cl
             cc: clang-cl
-          - name: linux
+          - name: Linux
             os: ubuntu-latest
             cxx: clang++
             cc: clang
-          - name: macos
+          - name: MacOS
             os: macos-latest
             cxx: clang++
             cc: clang
@@ -44,53 +45,10 @@ jobs:
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
-        run: python build.py -c Release --clean-build
+        run: python build.py -c ${{ matrix.config }} --clean-build
         shell: sh
 
       - uses: actions/upload-artifact@v2
         with:
-          name: llvm-${{ matrix.name }}
+          name: LLVM-${{ matrix.name }}-${{ matrix.config }}
           path: install
-
-  build-debug:
-    name: ${{ matrix.name }} debug
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        name: [windows, linux, macos]
-        include:
-          - name: windows
-            os: windows-latest
-            cxx: clang-cl
-            cc: clang-cl
-          - name: linux
-            os: ubuntu-latest
-            cxx: clang++
-            cc: clang
-          - name: macos
-            os: macos-latest
-            cxx: clang++
-            cc: clang
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Init Submodules
-        uses: snickerbockers/submodules-init@v4
-
-      - name: Get CMake
-        uses: lukka/get-cmake@latest
-
-      - name: Build & Install
-        env:
-          CC: ${{ matrix.cc }}
-          CXX: ${{ matrix.cxx }}
-        run: python build.py -c Debug --clean-build
-        shell: sh
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: llvm-${{ matrix.name }}-debug
-          path: install
-

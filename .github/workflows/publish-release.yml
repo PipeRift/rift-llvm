@@ -10,26 +10,27 @@ jobs:
     uses: ./.github/workflows/build.yml
 
   publish:
-    name: Publish ${{ matrix.name }}
+    name: ${{ matrix.name }} (${{ matrix.config }})
     needs: build
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
     strategy:
       matrix:
-        name: [windows, linux, macos]
+        name: [Windows, Linux, MacOS]
+        config: [Debug, Release]
         include:
-          - name: windows
+          - name: Windows
             os: windows-latest
-          - name: linux
+          - name: Linux
             os: ubuntu-latest
-          - name: macos
+          - name: MacOS
             os: macos-latest
     steps:
       - name: Download llvm build
         uses: actions/download-artifact@v2
         with:
-          name: llvm-${{ matrix.name }}
+          name: llvm-${{ matrix.name }}-${{ matrix.config }}
           path: llvm
 
       - name: Package
@@ -37,7 +38,7 @@ jobs:
         with:
           type: 'zip'
           path: 'llvm'
-          filename: 'llvm-${{ matrix.name }}.zip'
+          filename: 'llvm-${{ matrix.name }}-${{ matrix.config }}.zip'
           exclusions: '*.obj'
 
       - name: Upload Release
