@@ -1,38 +1,39 @@
 import os
 import sys, getopt
 import shutil
+import time
+import argparse
+from pathlib import Path
 
 
 def main(argv):
-  help = 'test.py -c {Debug|Release|MinSizeRel|RelWithDebInfo} -b {build-path} -i {install-path} [--clean-build]'
-  try:
-    opts, args = getopt.getopt(argv,"hc:bi",["config=", "build-path=", "install-path=", "clean-build"])
-  except getopt.GetoptError:
-    print(help)
-    sys.exit(2)
-
   root = os.getcwd()
-  config = 'Release'
+
+  parser = argparse.ArgumentParser(description = "Build LLVM for Rift", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument("--config", "-c", default="Release", help="Configuration to build LLVM in. Debug, Release, MinSizeRel or RelWithDebInfo")
+  parser.add_argument("--build", "-b", default="Build", help="Path where to build LLVM")
+  parser.add_argument("--install", "-i", default="Install", help="Path where to install build LLVM files")
+  parser.add_argument("--projects", default="clang,lld", help="List of LLVM projects to include on the build")
+  parser.add_argument("--targets", default="all", help="List of LLVM targets to include on the build")
+  parser.add_argument("--clean-build", action='store_true', help="Should build files be kept?")
+  args = parser.parse_args()
+  if not os.path.isabs(args.build):
+    args.build = os.path.join(root, args.build)
+  if not os.path.isabs(args.install):
+    args.install = os.path.join(root, args.install)
+  args.projects = args.projects.split(',')
+  args.targets = args.targets.split(',')
+
   llvm_path = os.path.join(root, 'llvm/llvm')
-  build_path = os.path.join(root, 'build')
-  install_path = os.path.join(root, 'install')
-  clean_build = False
 
-  for opt, arg in opts:
-    if opt == '-h':
-        print(help)
-        sys.exit()
-    elif opt in ("-c", "--config"):
-        config = arg
-    elif opt in ("-b", "--build-path"):
-        build_path = arg
-    elif opt in ("-i", "--install-path"):
-        install_path = arg
-    elif opt in ("--clean-build"):
-        clean_build = True
+  start_time = time.time()
+  print(">> Configure LLVM ({})".format(args.config))
 
-  print(">> Configure LLVM ({})".format(config))
-  os.system('cmake -S "{}" -B "{}" -DLLVM_ENABLE_PROJECTS="lld;clang" \
+
+  targetsParameter = ""
+  if args.targets:
+    targetsParameter = '-DLLVM_TARGETS_TO_BUILD="{}"'.format(';'.join(args.targets))
+  generateCommand = 'cmake -S "{}" -B "{}" -DLLVM_ENABLE_PROJECTS="{}" \
     -DLLVM_BUILD_TOOLS=OFF \
     -DLLVM_ENABLE_LIBXML2=OFF \
     -DLLVM_ENABLE_BINDINGS=OFF \
@@ -47,16 +48,20 @@ def main(argv):
     -DLLVM_USE_CRT_DEBUG=MDd \
     -DCLANG_BUILD_TOOLS=OFF \
     -DCLANG_INCLUDE_DOCS=OFF \
-    -DCMAKE_BUILD_TYPE={}'.format(llvm_path, build_path, config))
+    -DCMAKE_BUILD_TYPE={} {}'.format(llvm_path, args.build, ';'.join(args.projects), args.config, targetsParameter)
+  print("Running: \n  {}".format(generateCommand))
+  os.system(generateCommand)
 
   print("\n>> Build LLVM")
-  os.system('cmake --build "{}" --config {} --target install'.format(build_path, config))
+  os.system('cmake --build "{}" --config {} --target install'.format(args.build, args.config))
 
   print("\n>> Install LLVM")
-  os.system('cmake -DCMAKE_INSTALL_PREFIX={} -P {}/cmake_install.cmake'.format(install_path, build_path))
+  os.system('cmake -DCMAKE_INSTALL_PREFIX={} -P {}/cmake_install.cmake'.format(args.install, args.build))
 
-  if clean_build:
-    shutil.rmtree(build_path)
+  if args.clean_build:
+    shutil.rmtree(args.build)
+
+  print("Build took {:.2f} seconds".format(time.time() - start_time))
 
 if __name__ == "__main__":
    main(sys.argv[1:])
