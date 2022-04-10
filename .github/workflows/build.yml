@@ -45,7 +45,7 @@ jobs:
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
-        run: python build.py -c ${{ matrix.config }} --targets X86,ARM,AArch64,RISCV --clean-build
+        run: python build.py -c ${{ matrix.config }} --targets X86,ARM --clean-build
         shell: sh
 
       - uses: actions/upload-artifact@v2
