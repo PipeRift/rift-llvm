@@ -10,8 +10,8 @@ def main(argv):
 
   parser = argparse.ArgumentParser(description = "Build LLVM for Rift", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument("--config", "-c", default="Release", help="Configuration to build LLVM in. Debug, Release, MinSizeRel or RelWithDebInfo")
-  parser.add_argument("--build", "-b", default="Build", help="Path where to build LLVM")
-  parser.add_argument("--install", "-i", default="Install", help="Path where to install build LLVM files")
+  parser.add_argument("--build", "-b", default="build", help="Path where to build LLVM")
+  parser.add_argument("--install", "-i", default="install", help="Path where to install build LLVM files")
   parser.add_argument("--projects", default="clang,lld", help="List of LLVM projects to include on the build")
   parser.add_argument("--targets", default="all", help="List of LLVM targets to include on the build")
   parser.add_argument("--clean-build", action='store_true', help="Should build files be kept?")
