@@ -3,7 +3,6 @@ import sys, getopt
 import shutil
 import time
 import argparse
-from pathlib import Path
 
 
 def main(argv):
