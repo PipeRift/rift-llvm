@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         name: [Windows, Linux, MacOS]
-        config: [Debug, Release]
+        config: [Release]
         include:
           - name: Windows
             os: windows-latest
@@ -51,4 +51,4 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: LLVM-${{ matrix.name }}-${{ matrix.config }}
-          path: install
+          path: install/${{ matrix.config }}

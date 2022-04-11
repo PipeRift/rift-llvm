@@ -16,10 +16,13 @@ def main(argv):
   parser.add_argument("--targets", default="X86,ARM,AArch64,RISCV", help="List of LLVM targets to include on the build. 'all' will build all targets")
   parser.add_argument("--keep-build", action='store_true', help="Should build files be kept after LLVM is installed? Keeping build uses disk space but speedsup rebuilds of LLVM")
   args = parser.parse_args()
+
+  # Validate parameters
   if not os.path.isabs(args.build):
     args.build = os.path.join(root, args.build)
   if not os.path.isabs(args.install):
     args.install = os.path.join(root, args.install)
+  args.install = os.path.join(args.install, args.config)
   args.projects = args.projects.split(',')
   args.targets = args.targets.split(',')
 
