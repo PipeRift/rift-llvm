@@ -13,8 +13,8 @@ def main(argv):
   parser.add_argument("--build", "-b", default="build", help="Path where to build LLVM")
   parser.add_argument("--install", "-i", default="install", help="Path where to install build LLVM files")
   parser.add_argument("--projects", default="clang,lld", help="List of LLVM projects to include on the build")
-  parser.add_argument("--targets", default="all", help="List of LLVM targets to include on the build")
-  parser.add_argument("--clean-build", action='store_true', help="Should build files be kept?")
+  parser.add_argument("--targets", default="X86,ARM,AArch64,RISCV", help="List of LLVM targets to include on the build. 'all' will build all targets")
+  parser.add_argument("--keep-build", action='store_true', help="Should build files be kept after LLVM is installed? Keeping build uses disk space but speedsup rebuilds of LLVM")
   args = parser.parse_args()
   if not os.path.isabs(args.build):
     args.build = os.path.join(root, args.build)
@@ -57,7 +57,7 @@ def main(argv):
   print("\n>> Install LLVM")
   os.system('cmake -DCMAKE_INSTALL_PREFIX={} -P {}/cmake_install.cmake'.format(args.install, args.build))
 
-  if args.clean_build:
+  if not args.keep_build:
     shutil.rmtree(args.build)
 
   print("Build took {:.2f} seconds".format(time.time() - start_time))
