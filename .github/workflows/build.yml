@@ -45,7 +45,7 @@ jobs:
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
-        run: python build.py -c ${{ matrix.config }}
+        run: python build.py -c ${{ matrix.config }} -i install
         shell: sh
 
       - uses: actions/upload-artifact@v2
