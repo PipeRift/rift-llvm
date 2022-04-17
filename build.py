@@ -11,18 +11,13 @@ def main(argv):
   parser = argparse.ArgumentParser(description = "Build LLVM for Rift", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument("--config", "-c", default="Release", help="Configuration to build LLVM in. Debug, Release, MinSizeRel or RelWithDebInfo")
   parser.add_argument("--build", "-b", default="build", help="Path where to build LLVM")
-  parser.add_argument("--install", "-i", default="install", help="Path where to install build LLVM files")
+  parser.add_argument("--install", "-i", default=None, help="Path where to install build LLVM files. If none provided, install won't be run")
   parser.add_argument("--projects", default="clang,lld", help="List of LLVM projects to include on the build")
   parser.add_argument("--targets", default="X86,ARM,AArch64,RISCV", help="List of LLVM targets to include on the build. 'all' will build all targets")
   parser.add_argument("--keep-build", action='store_true', help="Should build files be kept after LLVM is installed? Keeping build uses disk space but speedsup rebuilds of LLVM")
   args = parser.parse_args()
 
   # Validate parameters
-  if not os.path.isabs(args.build):
-    args.build = os.path.join(root, args.build)
-  if not os.path.isabs(args.install):
-    args.install = os.path.join(root, args.install)
-  args.install = os.path.join(args.install, args.config)
   args.projects = args.projects.split(',')
   args.targets = args.targets.split(',')
 
@@ -30,8 +25,9 @@ def main(argv):
 
   start_time = time.time()
   print(">> Configure LLVM ({})".format(args.config))
-
-
+  if not os.path.isabs(args.build):
+    args.build = os.path.join(root, args.build)
+  args.build = os.path.join(args.build, args.config)
   targetsParameter = ""
   if args.targets:
     targetsParameter = '-DLLVM_TARGETS_TO_BUILD="{}"'.format(';'.join(args.targets))
@@ -54,16 +50,21 @@ def main(argv):
   print("Running: \n  {}".format(generateCommand))
   os.system(generateCommand)
 
+
   print("\n>> Build LLVM")
   os.system('cmake --build "{}" --config {} --target install'.format(args.build, args.config))
 
-  print("\n>> Install LLVM")
-  os.system('cmake -DCMAKE_INSTALL_PREFIX={} -P {}/cmake_install.cmake'.format(args.install, args.build))
+  if args.install:
+    print("\n>> Install LLVM")
+    if not os.path.isabs(args.install):
+      args.install = os.path.join(root, args.install)
+    args.install = os.path.join(args.install, args.config)
+    os.system('cmake -DCMAKE_INSTALL_PREFIX={} -P {}/cmake_install.cmake'.format(args.install, args.build))
 
   if not args.keep_build:
     shutil.rmtree(args.build)
 
-  print("Build took {:.2f} seconds".format(time.time() - start_time))
+  print("Took {:.2f} seconds".format(time.time() - start_time))
 
 if __name__ == "__main__":
    main(sys.argv[1:])
