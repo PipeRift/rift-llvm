@@ -41,11 +41,18 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
-      - name: Build & Install
+      - name: Build
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
-        run: python build.py -c ${{ matrix.config }} -i install
+        run: python build.py -c ${{ matrix.config }} --keep-build
+        shell: sh
+
+      - name: Install
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: python build.py -c ${{ matrix.config }} --no-build -i install
         shell: sh
 
       - uses: actions/upload-artifact@v2
