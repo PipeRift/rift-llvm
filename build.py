@@ -12,7 +12,7 @@ def main(argv):
   parser.add_argument("--config", "-c", default="Release", help="Configuration to build LLVM in. Debug, Release, MinSizeRel or RelWithDebInfo")
   parser.add_argument("--build", "-b", default="build", help="Path where to build LLVM")
   parser.add_argument("--no-build", action='store_true', help="Should build be skipped?")
-  parser.add_argument("--install", "-i", default="install", help="Path where to install build LLVM files. If none provided, install won't be run")
+  parser.add_argument("--install", "-i", default=None, help="Path where to install build LLVM files. If none provided, install won't be run")
   parser.add_argument("--projects", default="clang,lld", help="List of LLVM projects to include on the build")
   parser.add_argument("--targets", default="X86,ARM,AArch64,RISCV", help="List of LLVM targets to include on the build. 'all' will build all targets")
   parser.add_argument("--clean-build", action='store_true', help="Should build files be cleaned after LLVM is build and/or installed? Keeping build uses disk space but speeds up rebuilds of LLVM")
