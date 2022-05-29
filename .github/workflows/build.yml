@@ -45,14 +45,14 @@ jobs:
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
-        run: python build.py -c ${{ matrix.config }} --keep-build
+        run: python build.py -c ${{ matrix.config }}
         shell: sh
 
       - name: Install
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
-        run: python build.py -c ${{ matrix.config }} --no-build -i install
+        run: python build.py -c ${{ matrix.config }} --no-build -i install --clean-build
         shell: sh
 
       - uses: actions/upload-artifact@v2
