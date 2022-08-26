@@ -4,6 +4,33 @@ import shutil
 import time
 import argparse
 
+def build(path, build_path, projects, config, targets):
+  os.makedirs(build_path, exist_ok = True)
+  os.chdir(build_path)
+
+  params = '-DCMAKE_BUILD_TYPE={} \
+    -DLLVM_ENABLE_PROJECTS="{}" \
+    -DLLVM_BUILD_TOOLS=OFF \
+    -DLLVM_ENABLE_LIBXML2=OFF \
+    -DLLVM_ENABLE_BINDINGS=OFF \
+    -DLLVM_ENABLE_OCAMLDOC=OFF \
+    -DLLVM_ENABLE_Z3_SOLVER=OFF \
+    -DLLVM_INCLUDE_BENCHMARKS=OFF \
+    -DLLVM_INCLUDE_DOCS=OFF \
+    -DLLVM_INCLUDE_EXAMPLES=OFF \
+    -DLLVM_INCLUDE_GO_TESTS=OFF \
+    -DLLVM_INCLUDE_TESTS=OFF \
+    -DLLVM_USE_CRT_RELEASE=MD \
+    -DLLVM_USE_CRT_DEBUG=MDd \
+    -DCLANG_BUILD_TOOLS=OFF \
+    -DCLANG_INCLUDE_DOCS=OFF'.format(config, ';'.join(projects))
+  if targets:
+    params += ' -DLLVM_TARGETS_TO_BUILD="{}"'.format(';'.join(targets))
+
+  buildCommand = 'cmake {} {}'.format(params, path)
+  print("Running: \n  {}".format(buildCommand))
+  os.system(buildCommand)
+
 
 def main(argv):
   root = os.getcwd()
@@ -22,38 +49,13 @@ def main(argv):
   args.projects = args.projects.split(',')
   args.targets = args.targets.split(',')
 
-  llvm_path = os.path.join(root, 'llvm/llvm')
+  llvm_path = os.path.join(root, 'llvm')
 
   start_time = time.time()
-  print(">> Configure LLVM ({})".format(args.config))
-  if not os.path.isabs(args.build):
-    args.build = os.path.join(root, args.build)
-  args.build = os.path.join(args.build, args.config)
-  targetsParameter = ""
-  if args.targets:
-    targetsParameter = '-DLLVM_TARGETS_TO_BUILD="{}"'.format(';'.join(args.targets))
-  generateCommand = 'cmake -S "{}" -B "{}" -DLLVM_ENABLE_PROJECTS="{}" \
-    -DLLVM_BUILD_TOOLS=OFF \
-    -DLLVM_ENABLE_LIBXML2=OFF \
-    -DLLVM_ENABLE_BINDINGS=OFF \
-    -DLLVM_ENABLE_OCAMLDOC=OFF \
-    -DLLVM_ENABLE_Z3_SOLVER=OFF \
-    -DLLVM_INCLUDE_BENCHMARKS=OFF \
-    -DLLVM_INCLUDE_DOCS=OFF \
-    -DLLVM_INCLUDE_EXAMPLES=OFF \
-    -DLLVM_INCLUDE_GO_TESTS=OFF \
-    -DLLVM_INCLUDE_TESTS=OFF \
-    -DLLVM_USE_CRT_RELEASE=MD \
-    -DLLVM_USE_CRT_DEBUG=MDd \
-    -DCLANG_BUILD_TOOLS=OFF \
-    -DCLANG_INCLUDE_DOCS=OFF \
-    -DCMAKE_BUILD_TYPE={} {}'.format(llvm_path, args.build, ';'.join(args.projects), args.config, targetsParameter)
-  print("Running: \n  {}".format(generateCommand))
-  os.system(generateCommand)
-
 
   print("\n>> Build LLVM")
   if not args.no_build:
+    build(llvm_path, args.build, args.projects, args.config, args.targets)
     os.system('cmake --build "{}" --config {} --target install'.format(args.build, args.config))
 
   if args.install:
@@ -61,7 +63,7 @@ def main(argv):
     if not os.path.isabs(args.install):
       args.install = os.path.join(root, args.install)
     args.install = os.path.join(args.install, args.config)
-    os.system('cmake -DCMAKE_INSTALL_PREFIX={} -P {}/cmake_install.cmake'.format(args.install, args.build))
+    os.system('cmake -DCMAKE_INSTALL_PREFIX={} -DBUILD_TYPE={} -P {}/cmake_install.cmake'.format(args.install, args.config, args.build))
 
   if args.clean_build:
     shutil.rmtree(args.build)
