@@ -54,9 +54,9 @@ def main(argv):
   start_time = time.time()
   if not os.path.isabs(args.build):
     args.build = os.path.join(root, args.build)
-  args.build = os.path.join(args.build, args.config)
+  #args.build = os.path.join(args.build, args.config)
 
-  print("\n>> Configure LLVM")
+  print(">> Configure LLVM ({})".format(args.config))
   configure(llvm_path, args.build, args.projects, args.config, args.targets)
 
   if not args.no_build:
