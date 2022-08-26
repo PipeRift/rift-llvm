@@ -4,7 +4,7 @@ import shutil
 import time
 import argparse
 
-def build(path, build_path, projects, config, targets):
+def configure(path, build_path, projects, config, targets):
   os.makedirs(build_path, exist_ok = True)
   os.chdir(build_path)
 
@@ -49,14 +49,19 @@ def main(argv):
   args.projects = args.projects.split(',')
   args.targets = args.targets.split(',')
 
-  llvm_path = os.path.join(root, 'llvm')
+  llvm_path = os.path.join(root, 'llvm/llvm')
 
   start_time = time.time()
+  if not os.path.isabs(args.build):
+    args.build = os.path.join(root, args.build)
+  args.build = os.path.join(args.build, args.config)
 
-  print("\n>> Build LLVM")
+  print("\n>> Configure LLVM")
+  configure(llvm_path, args.build, args.projects, args.config, args.targets)
+
   if not args.no_build:
-    build(llvm_path, args.build, args.projects, args.config, args.targets)
-    os.system('cmake --build "{}" --config {} --target install'.format(args.build, args.config))
+    print("\n>> Build LLVM")
+    os.system('cmake --build "{}" --target install'.format(args.build))
 
   if args.install:
     print("\n>> Install LLVM")
