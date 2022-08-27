@@ -5,9 +5,6 @@ import time
 import argparse
 
 def configure(path, build_path, projects, config, targets):
-  os.makedirs(build_path, exist_ok = True)
-  os.chdir(build_path)
-
   params = '-DCMAKE_BUILD_TYPE={} \
     -DLLVM_ENABLE_PROJECTS="{}" \
     -DLLVM_BUILD_TOOLS=OFF \
@@ -54,7 +51,10 @@ def main(argv):
   start_time = time.time()
   if not os.path.isabs(args.build):
     args.build = os.path.join(root, args.build)
-  #args.build = os.path.join(args.build, args.config)
+
+  if not os.path.exists(args.build):
+    os.makedirs(args.build)
+  os.chdir(args.build)
 
   print(">> Configure LLVM ({})".format(args.config))
   configure(llvm_path, args.build, args.projects, args.config, args.targets)
