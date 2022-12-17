@@ -61,7 +61,7 @@ def main(argv):
 
   if not args.no_build:
     print("\n>> Build LLVM")
-    os.system('cmake --build "{}" --target install'.format(args.build))
+    os.system('cmake --build "{}" --config {} --target install'.format(args.build, args.config))
 
   if args.install:
     print("\n>> Install LLVM")
