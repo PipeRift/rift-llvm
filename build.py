@@ -4,8 +4,19 @@ import shutil
 import time
 import argparse
 
+
+def install_dependencies():
+  if sys.platform == "linux" or sys.platform == "linux2":
+    print(">> Install dependencies")
+    try:
+      os.system('sudo apt -qq install -y libedit-dev')
+    except:
+      exit("Failed to install dependencies")
+
 def configure(path, build_path, projects, config, targets):
-  params = '-DCMAKE_BUILD_TYPE={} \
+  print('>> Configure ({})'.format(config))
+
+  command = 'cmake -S "{}" -B "{}" -DCMAKE_BUILD_TYPE={} \
     -DLLVM_ENABLE_PROJECTS="{}" \
     -DLLVM_BUILD_TOOLS=OFF \
     -DLLVM_ENABLE_LIBXML2=OFF \
@@ -20,14 +31,29 @@ def configure(path, build_path, projects, config, targets):
     -DLLVM_USE_CRT_RELEASE=MD \
     -DLLVM_USE_CRT_DEBUG=MDd \
     -DCLANG_BUILD_TOOLS=OFF \
-    -DCLANG_INCLUDE_DOCS=OFF'.format(config, ';'.join(projects))
+    -DCLANG_INCLUDE_DOCS=OFF'.format(path, build_path, config, ';'.join(projects))
   if targets:
-    params += ' -DLLVM_TARGETS_TO_BUILD="{}"'.format(';'.join(targets))
+    command += ' -DLLVM_TARGETS_TO_BUILD="{}"'.format(';'.join(targets))
 
-  buildCommand = 'cmake {} {}'.format(params, path)
-  print("Running: \n  {}".format(buildCommand))
-  os.system(buildCommand)
+  print('Command: {}'.format(command))
+  os.system(command)
+  print('\n')
 
+def build(build_path, config):
+  print('>> Build ({})'.format(config))
+  command = 'cmake --build "{}" --config {} --target install'.format(build_path, config)
+  print('Command: {}'.format(command))
+  os.system(command)
+  print('\n')
+
+
+def install(root, build_path, install_path, config):
+  print(">> Install LLVM")
+  if not os.path.isabs(install_path):
+    install_path = os.path.join(root, install_path)
+  install_path = os.path.join(install_path, config)
+  os.system('cmake -DCMAKE_INSTALL_PREFIX={} -DBUILD_TYPE={} -P {}/cmake_install.cmake'.format(install_path, config, build_path))
+  print('\n')
 
 def main(argv):
   root = os.getcwd()
@@ -42,6 +68,8 @@ def main(argv):
   parser.add_argument("--clean-build", action='store_true', help="Should build files be cleaned after LLVM is build and/or installed? Keeping build uses disk space but speeds up rebuilds of LLVM")
   args = parser.parse_args()
 
+  install_dependencies()
+
   # Validate parameters
   args.projects = args.projects.split(',')
   args.targets = args.targets.split(',')
@@ -49,26 +77,21 @@ def main(argv):
   llvm_path = os.path.join(root, 'llvm/llvm')
 
   start_time = time.time()
+
+  # Sanitize paths
   if not os.path.isabs(args.build):
     args.build = os.path.join(root, args.build)
 
   if not os.path.exists(args.build):
     os.makedirs(args.build)
-  os.chdir(args.build)
 
-  print(">> Configure LLVM ({})".format(args.config))
   configure(llvm_path, args.build, args.projects, args.config, args.targets)
 
   if not args.no_build:
-    print("\n>> Build LLVM")
-    os.system('cmake --build "{}" --config {} --target install'.format(args.build, args.config))
+    build(args.build, args.config)
 
   if args.install:
-    print("\n>> Install LLVM")
-    if not os.path.isabs(args.install):
-      args.install = os.path.join(root, args.install)
-    args.install = os.path.join(args.install, args.config)
-    os.system('cmake -DCMAKE_INSTALL_PREFIX={} -DBUILD_TYPE={} -P {}/cmake_install.cmake'.format(args.install, args.config, args.build))
+    install(root, args.build, args.install, args.config)
 
   if args.clean_build:
     shutil.rmtree(args.build)
