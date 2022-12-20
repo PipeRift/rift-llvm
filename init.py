@@ -2,11 +2,10 @@ import os
 import sys, getopt
 import shutil
 import argparse
-import pathlib
 
 
 def main(argv):
-  root = pathlib.Path(__file__).parent.absolute()
+  root = os.path.dirname(__file__)
 
   parser = argparse.ArgumentParser(description = "Init Rift LLVM toolchain", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   args = parser.parse_args()

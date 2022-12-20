@@ -3,7 +3,6 @@ import sys, getopt
 import shutil
 import time
 import argparse
-import pathlib
 
 
 def install_dependencies():
@@ -58,7 +57,7 @@ def install(root, build_path, install_path, config):
   print('\n')
 
 def main(argv):
-  root = pathlib.Path(__file__).parent.absolute()
+  root = os.path.dirname(__file__)
 
   parser = argparse.ArgumentParser(description = "Build LLVM for Rift", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument("--config", "-c", default="Release", help="Configuration to build LLVM in. Debug, Release, MinSizeRel or RelWithDebInfo")
