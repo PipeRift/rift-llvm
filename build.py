@@ -19,17 +19,19 @@ def configure(path, build_path, projects, config, targets):
   command = 'cmake -S "{}" -B "{}" -DCMAKE_BUILD_TYPE={} \
     -DLLVM_ENABLE_PROJECTS="{}" \
     -DLLVM_BUILD_TOOLS=OFF \
+    -DLLVM_ENABLE_LLD=ON \
     -DLLVM_ENABLE_LIBXML2=OFF \
     -DLLVM_ENABLE_BINDINGS=OFF \
     -DLLVM_ENABLE_OCAMLDOC=OFF \
     -DLLVM_ENABLE_Z3_SOLVER=OFF \
+    -DLLVM_ENABLE_WARNINGS=OFF \
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DLLVM_INCLUDE_DOCS=OFF \
     -DLLVM_INCLUDE_EXAMPLES=OFF \
-    -DLLVM_INCLUDE_GO_TESTS=OFF \
     -DLLVM_INCLUDE_TESTS=OFF \
-    -DLLVM_USE_CRT_RELEASE=MD \
-    -DLLVM_USE_CRT_DEBUG=MDd \
+    -DLLVM_INCLUDE_TOOLS=OFF \
+    -DLLVM_USE_CRT_RELEASE=MT \
+    -DLLVM_USE_CRT_DEBUG=MTd \
     -DCLANG_BUILD_TOOLS=OFF \
     -DCLANG_INCLUDE_DOCS=OFF'.format(path, build_path, config, ';'.join(projects))
   if targets:
