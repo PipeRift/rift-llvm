@@ -3,6 +3,7 @@ import sys, getopt
 import shutil
 import time
 import argparse
+import pathlib
 
 
 def install_dependencies():
@@ -19,7 +20,6 @@ def configure(path, build_path, projects, config, targets):
   command = 'cmake -S "{}" -B "{}" -DCMAKE_BUILD_TYPE={} \
     -DLLVM_ENABLE_PROJECTS="{}" \
     -DLLVM_BUILD_TOOLS=OFF \
-    -DLLVM_ENABLE_LLD=ON \
     -DLLVM_ENABLE_LIBXML2=OFF \
     -DLLVM_ENABLE_BINDINGS=OFF \
     -DLLVM_ENABLE_OCAMLDOC=OFF \
@@ -58,7 +58,7 @@ def install(root, build_path, install_path, config):
   print('\n')
 
 def main(argv):
-  root = os.getcwd()
+  root = pathlib.Path(__file__).parent.absolute()
 
   parser = argparse.ArgumentParser(description = "Build LLVM for Rift", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument("--config", "-c", default="Release", help="Configuration to build LLVM in. Debug, Release, MinSizeRel or RelWithDebInfo")

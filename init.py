@@ -2,12 +2,13 @@ import os
 import sys, getopt
 import shutil
 import argparse
+import pathlib
 
 
 def main(argv):
-  root = os.getcwd()
+  root = pathlib.Path(__file__).parent.absolute()
 
-  parser = argparse.ArgumentParser(description = "Init LLVM project", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser = argparse.ArgumentParser(description = "Init Rift LLVM toolchain", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   args = parser.parse_args()
 
   os.chdir(root)
