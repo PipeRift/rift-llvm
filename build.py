@@ -13,28 +13,12 @@ def install_dependencies():
     except:
       exit("Failed to install dependencies")
 
-def configure(path, build_path, projects, config, targets):
+def configure(root, path, build_path, config):
   print('>> Configure ({})'.format(config))
 
-  command = 'cmake -S "{}" -B "{}" -DCMAKE_BUILD_TYPE={} \
-    -DLLVM_ENABLE_PROJECTS="{}" \
-    -DLLVM_BUILD_TOOLS=OFF \
-    -DLLVM_ENABLE_LIBXML2=OFF \
-    -DLLVM_ENABLE_BINDINGS=OFF \
-    -DLLVM_ENABLE_OCAMLDOC=OFF \
-    -DLLVM_ENABLE_Z3_SOLVER=OFF \
-    -DLLVM_ENABLE_WARNINGS=OFF \
-    -DLLVM_INCLUDE_BENCHMARKS=OFF \
-    -DLLVM_INCLUDE_DOCS=OFF \
-    -DLLVM_INCLUDE_EXAMPLES=OFF \
-    -DLLVM_INCLUDE_TESTS=OFF \
-    -DLLVM_INCLUDE_TOOLS=OFF \
-    -DLLVM_USE_CRT_RELEASE=MT \
-    -DLLVM_USE_CRT_DEBUG=MTd \
-    -DCLANG_BUILD_TOOLS=OFF \
-    -DCLANG_INCLUDE_DOCS=OFF'.format(path, build_path, config, ';'.join(projects))
-  if targets:
-    command += ' -DLLVM_TARGETS_TO_BUILD="{}"'.format(';'.join(targets))
+  cache_file = os.path.join(root, 'cache.cmake')
+
+  command = 'cmake -S "{}" -B "{}" -C "{}" -DCMAKE_BUILD_TYPE={}'.format(path, build_path, cache_file, config)
 
   print('Command: {}'.format(command))
   os.system(command)
@@ -42,7 +26,8 @@ def configure(path, build_path, projects, config, targets):
 
 def build(build_path, config):
   print('>> Build ({})'.format(config))
-  command = 'cmake --build "{}" --config {} --target install'.format(build_path, config)
+  targets = ["libclang", "install"]
+  command = 'cmake --build "{}" --config {} --target {}'.format(build_path, config, ' '.join(targets))
   print('Command: {}'.format(command))
   os.system(command)
   print('\n')
@@ -64,16 +49,10 @@ def main(argv):
   parser.add_argument("--build", "-b", default="build", help="Path where to build LLVM")
   parser.add_argument("--no-build", action='store_true', help="Should build be skipped?")
   parser.add_argument("--install", "-i", default=None, help="Path where to install build LLVM files. If none provided, install won't be run")
-  parser.add_argument("--projects", default="clang,lld", help="List of LLVM projects to include on the build")
-  parser.add_argument("--targets", default="X86,ARM,AArch64,RISCV", help="List of LLVM targets to include on the build. 'all' will build all targets")
   parser.add_argument("--clean-build", action='store_true', help="Should build files be cleaned after LLVM is build and/or installed? Keeping build uses disk space but speeds up rebuilds of LLVM")
   args = parser.parse_args()
 
   install_dependencies()
-
-  # Validate parameters
-  args.projects = args.projects.split(',')
-  args.targets = args.targets.split(',')
 
   llvm_path = os.path.join(root, 'llvm/llvm')
 
@@ -86,7 +65,7 @@ def main(argv):
   if not os.path.exists(args.build):
     os.makedirs(args.build)
 
-  configure(llvm_path, args.build, args.projects, args.config, args.targets)
+  configure(root, llvm_path, args.build, args.config)
 
   if not args.no_build:
     build(args.build, args.config)
