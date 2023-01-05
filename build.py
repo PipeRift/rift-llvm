@@ -21,26 +21,26 @@ def configure(root, path, build_path, config):
 
   command = 'cmake -S "{}" -B "{}" -C "{}" -DCMAKE_BUILD_TYPE={}'.format(path, build_path, cache_file, config)
   print('Command: {}'.format(command))
-  subprocess.run(command, check=True)
+  subprocess.run(command, shell=True, check=True)
   print('\n')
 
 def build(build_path, config):
   print('>> Build ({})'.format(config))
   command = 'cmake --build "{}" --config {} --target install'.format(build_path, config)
   print('Command: {}'.format(command))
-  subprocess.run(command, check=False)
+  subprocess.run(command, shell=True, check=False)
 
   # Extra targets
   #command = 'cmake --build "{}" --config {} --target libclang'.format(build_path, config)
   #print('Command: {}'.format(command))
-  #subprocess.run(command, check=False)
+  #subprocess.run(command, shell=True, check=False)
   print('\n')
 
 def install(install_path, build_path, config):
   print(">> Install LLVM")
   command = 'cmake --install {} --config {} --prefix {}'.format(build_path, config, install_path)
   print('Command: {}'.format(command))
-  subprocess.run(command, check=True)
+  subprocess.run(command, shell=True, check=True)
   print('\n')
 
 
